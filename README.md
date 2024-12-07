@@ -62,9 +62,9 @@ project, and the LLM will come up with a deployment plan.
 
 ## Disclaimers
 
-As with any MCP server, be careful to review the containers that the LLM
-creates. Docker is not a secure sandbox, and therefore the MCP server can
-potentially impact the host machine through Docker.
+Be careful to review the containers that the LLM creates. Docker is not a secure
+sandbox, and therefore the MCP server can potentially impact the host machine
+through Docker.
 
 For safety reasons, this MCP server doesn't support sensitive Docker options
 like `--privileged` or `--cap-add/--cap-drop`. If these features are of interest
@@ -82,24 +82,27 @@ details, see
 
 #### Claude Desktop
 
-On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json` On
-Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+
+On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
   <summary>Development/Unpublished Servers Configuration</summary>
-  ```
-  "mcpServers": {
-    "mcp-server-docker": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/path/to/repo",
-        "run",
-        "mcp-server-docker"
-      ]
-    }
+
+```
+"mcpServers": {
+  "mcp-server-docker": {
+    "command": "uv",
+    "args": [
+      "--directory",
+      "/path/to/repo",
+      "run",
+      "mcp-server-docker"
+    ]
   }
-  ```
+}
+```
+
 </details>
 
 ## Development
