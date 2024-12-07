@@ -1,0 +1,18 @@
+[project]
+name = "mcp-docker-server"
+version = "0.1.0"
+description = "A Docker MCP Server"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["docker>=7.1.0", "mcp>=1.1.0"]
+
+[[project.authors]]
+name = "Christian Kreiling"
+email = "kreiling@hey.com"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+mcp-docker-server = "mcp_docker_server:main"
