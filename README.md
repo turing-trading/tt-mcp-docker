@@ -24,6 +24,7 @@ The server implements a couple resources for every running container:
 - `list_containers`
 - `create_container`
 - `run_container`
+- `recreate_container`
 - `start_container`
 - `fetch_container_logs`
 - `stop_container`
