@@ -4,6 +4,7 @@
   "shell": {
     "init_hook": ["echo 'Welcome to devbox!' > /dev/null"],
     "scripts": {
+      "python-lint": ["uv run ruff check src/**/*.py"],
       "prettier-format": ["npx --yes prettier --write *.json *.md"],
       "prettier-check": ["npx --yes prettier --check *.json *.md"],
       "mcp-run": ["uv run mcp-server-docker"],
