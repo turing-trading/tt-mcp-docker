@@ -352,11 +352,7 @@ async def call_tool(
     try:
         if name == "list_containers":
             args = ListContainersInput.model_validate(arguments)
-            filters = {}
-            if args.filter_labels is not None:
-                filters["label"] = args.filter_labels
-
-            containers = docker_client.containers.list(all=args.all, filters=filters)
+            containers = docker_client.containers.list(**args.model_dump())
             result = [
                 {
                     "id": c.id,
@@ -369,9 +365,7 @@ async def call_tool(
 
         elif name == "create_container":
             args = CreateContainerInput.model_validate(arguments)
-            container = docker_client.containers.create(
-                **args.model_dump(),
-            )
+            container = docker_client.containers.create(**args.model_dump())
             result = {
                 "status": container.status,
                 "id": container.id,
@@ -380,9 +374,7 @@ async def call_tool(
 
         elif name == "run_container":
             args = CreateContainerInput.model_validate(arguments)
-            container = docker_client.containers.run(
-                **args.model_dump(),
-            )
+            container = docker_client.containers.run(**args.model_dump())
             result = {
                 "status": container.status,
                 "id": container.id,
@@ -392,11 +384,7 @@ async def call_tool(
         elif name == "recreate_container":
             args = RecreateContainerInput.model_validate(arguments)
 
-            try:
-                container = docker_client.containers.get(args.resolved_container_id)
-            except docker.errors.NotFound:
-                raise Exception(f"Container not found: {args.resolved_container_id}")
-
+            container = docker_client.containers.get(args.resolved_container_id)
             container.stop()
             container.remove()
 
@@ -434,27 +422,22 @@ async def call_tool(
 
         elif name == "list_images":
             args = ListImagesInput.model_validate(arguments)
-            filters = {}
-            if args.include_dangling is not None:
-                filters["dangling"] = args.include_dangling
-            if args.filter_labels:
-                filters["label"] = args.filter_labels
 
-            images = docker_client.images.list(
-                name=args.name,
-                all=args.all,
-                filters=filters,
-            )
+            images = docker_client.images.list(**args.model_dump())
             result = [{"id": img.id, "tags": img.tags} for img in images]
 
         elif name == "pull_image":
             args = PullPushImageInput.model_validate(arguments)
-            image = docker_client.images.pull(args.repository, tag=args.tag)
+            model_dump = args.model_dump()
+            repository = model_dump.pop("repository")
+            image = docker_client.images.pull(repository, **model_dump)
             result = {"id": image.id, "tags": image.tags}
 
         elif name == "push_image":
             args = PullPushImageInput.model_validate(arguments)
-            docker_client.images.push(args.repository, tag=args.tag)
+            model_dump = args.model_dump()
+            repository = model_dump.pop("repository")
+            docker_client.images.push(repository, **model_dump)
             result = {
                 "status": "pushed",
                 "repository": args.repository,
@@ -463,22 +446,17 @@ async def call_tool(
 
         elif name == "build_image":
             args = BuildImageInput.model_validate(arguments)
-            image = docker_client.images.build(
-                path=args.path, tag=args.tag, dockerfile=args.dockerfile
-            )
-            result = {"id": image[0].id, "tags": image[0].tags}
+            image, logs = docker_client.images.build(**args.model_dump())
+            result = {"id": image.id, "tags": image.tags, "logs": list(logs)}
 
         elif name == "remove_image":
             args = RemoveImageInput.model_validate(arguments)
-            docker_client.images.remove(image=args.image, force=args.force)
+            docker_client.images.remove(**args.model_dump())
             result = {"status": "removed", "image": args.image}
 
         elif name == "list_networks":
             args = ListNetworksInput.model_validate(arguments)
-            filters = {}
-            if args.filter_labels is not None:
-                filters["label"] = args.filter_labels
-            networks = docker_client.networks.list(filters=filters)
+            networks = docker_client.networks.list(**args.model_dump())
             result = [
                 {"id": net.id, "name": net.name, "driver": net.attrs["Driver"]}
                 for net in networks
@@ -486,9 +464,7 @@ async def call_tool(
 
         elif name == "create_network":
             args = CreateNetworkInput.model_validate(arguments)
-            network = docker_client.networks.create(
-                **args.model_dump(),
-            )
+            network = docker_client.networks.create(**args.model_dump())
             result = {"id": network.id, "name": network.name}
 
         elif name == "remove_network":
@@ -506,9 +482,7 @@ async def call_tool(
 
         elif name == "create_volume":
             args = CreateVolumeInput.model_validate(arguments)
-            volume = docker_client.volumes.create(
-                name=args.name, driver=args.driver, labels=args.labels
-            )
+            volume = docker_client.volumes.create(**args.model_dump())
             result = {"name": volume.name, "driver": volume.attrs["Driver"]}
 
         elif name == "remove_volume":

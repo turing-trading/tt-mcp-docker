@@ -63,13 +63,17 @@ class FetchContainerLogsInput(JSONParsingModel):
     )
 
 
+class ListContainersFilters(JSONParsingModel):
+    label: list[str] | None = Field(
+        None, description="Filter by label, either `key` or `key=value` format"
+    )
+
+
 class ListContainersInput(JSONParsingModel):
     all: bool = Field(
         False, description="Show all containers (default shows just running)"
     )
-    filter_labels: list[str] | None = Field(
-        None, description="Filter by label, either `key` or `key=value` format"
-    )
+    filters: ListContainersFilters | None = Field(None, description="Filter containers")
 
 
 class CreateContainerInput(JSONParsingModel):
@@ -134,15 +138,19 @@ class RemoveContainerInput(JSONParsingModel):
     force: bool = Field(False, description="Force remove the container")
 
 
+class ListImagesFilters(JSONParsingModel):
+    dangling: bool | None = Field(None, description="Show dangling images")
+    label: list[str] | None = Field(
+        None, description="Filter by label, either `key` or `key=value` format"
+    )
+
+
 class ListImagesInput(JSONParsingModel):
     name: str | None = Field(
         None, description="Filter images by repository name, if desired"
     )
     all: bool = Field(False, description="Show all images (default hides intermediate)")
-    include_dangling: bool | None = Field(None, description="Show dangling images")
-    filter_labels: list[str] | None = Field(
-        None, description="Filter by label, either `key` or `key=value` format"
-    )
+    filters: ListImagesFilters | None = Field(None, description="Filter images")
 
 
 class PullPushImageInput(JSONParsingModel):
@@ -161,10 +169,14 @@ class RemoveImageInput(JSONParsingModel):
     force: bool = Field(False, description="Force remove the image")
 
 
-class ListNetworksInput(JSONParsingModel):
-    filter_labels: list[str] | None = Field(
+class ListNetworksFilter(JSONParsingModel):
+    label: list[str] | None = Field(
         None, description="Filter by label, either `key` or `key=value` format"
     )
+
+
+class ListNetworksInput(JSONParsingModel):
+    filters: ListNetworksFilter | None = Field(None, description="Filter networks")
 
 
 class CreateNetworkInput(JSONParsingModel):
