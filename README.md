@@ -13,7 +13,9 @@ The server implements a couple resources for every running container:
 
 ### Prompts
 
-This server does not provide any prompts.
+- `docker_compose`: use natural language instead of YAML to compose containers. Simply provide a project name and a description of the containers comprising the project, and the LLM will come up with a deployment plan. Examples:
+    - name: `wordpress`, containers: "deploy a WordPress container and a supporting MySQL container, exposing Wordpress on port 9000"
+    - name: `nginx`, containers: "deploy an nginx container exposing it on port 9000"
 
 ### Tools
 

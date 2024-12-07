@@ -4,7 +4,9 @@ from collections.abc import Sequence
 from typing import Any
 
 import docker
+import docker.errors
 import mcp.types as types
+from docker.models.containers import Container
 from mcp.server import Server
 from pydantic import AnyUrl, ValidationError
 
@@ -14,12 +16,14 @@ from .input_schemas import (
     CreateContainerInput,
     CreateNetworkInput,
     CreateVolumeInput,
+    DockerComposePromptInput,
     FetchContainerLogsInput,
     ListContainersInput,
     ListImagesInput,
     ListNetworksInput,
     ListVolumesInput,
     PullPushImageInput,
+    RecreateContainerInput,
     RemoveContainerInput,
     RemoveImageInput,
     RemoveNetworkInput,
@@ -29,11 +33,165 @@ from .input_schemas import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("docker-server")
 
-server = Server("docker-server")
+app = Server("docker-server")
 docker_client = docker.from_env()
 
 
-@server.list_resources()
+@app.list_prompts()
+async def list_prompts() -> list[types.Prompt]:
+    return [
+        types.Prompt(
+            name="docker_compose",
+            description="Treat the LLM like a Docker Compose manager",
+            arguments=[
+                types.PromptArgument(
+                    name="name", description="Unique name of the project", required=True
+                ),
+                types.PromptArgument(
+                    name="containers",
+                    description="Describe containers you want",
+                    required=True,
+                ),
+            ],
+        )
+    ]
+
+
+@app.get_prompt()
+async def get_prompt(
+    name: str, arguments: dict[str, str] | None
+) -> types.GetPromptResult:
+    if name == "docker_compose":
+        input = DockerComposePromptInput.model_validate(arguments)
+        project_label = f"mcp-server-docker.project={input.name}"
+        containers: list[Container] = docker_client.containers.list(
+            filters={"label": project_label}
+        )
+        volumes = docker_client.volumes.list(filters={"label": project_label})
+        networks = docker_client.networks.list(filters={"label": project_label})
+
+        return types.GetPromptResult(
+            messages=[
+                types.PromptMessage(
+                    role="user",
+                    content=types.TextContent(
+                        type="text",
+                        text=f"""
+You are going to act as a Docker Compose manager, using the Docker Tools
+available to you. Instead of being provided a `docker-compose.yml` file,
+you will be given instructions in plain language, and interact with the
+user through a plan+apply loop, akin to how Terraform operates.
+
+Every Docker resource you create must be assigned the following label:
+
+    {project_label}
+
+You should use this label to filter resources when possible.
+
+Every Docker resource you create must also be prefixed with the project name, followed by a dash (`-`):
+
+    {input.name}-{{ResourceName}}
+
+Here are the resources currently present in the project, based on the presence of the above label:
+
+<BEGIN CONTAINERS>
+{json.dumps([{"name": c.name, "image": {"id": c.image.id, "tags": c.image.tags} if c.image is not None else {}, "status": c.status, "id": c.id, "ports": c.ports, "health": c.health} for c in containers], indent=2)}
+<END CONTAINERS>
+<BEGIN VOLUMES>
+{json.dumps([{"name": v.name, "id": v.id} for v in volumes], indent=2)}
+<END VOLUMES>
+<BEGIN NETWORKS>
+{json.dumps([{"name": n.name, "id": n.id, "containers": [{"id": c.id} for c in n.containers]} for n in networks], indent=2)}
+<END NETWORKS>
+
+Do not retry the same failed action more than once. Prefer terminating your output
+when presented with 3 errors in a row, and ask a clarifying question to
+form better inputs or address the error.
+
+For container images, always prefer using the `latest` image tag, unless the user specifies a tag specifically.
+So if a user asks to deploy Nginx, you should pull `nginx:latest`.
+
+Below is a description of the state of the Docker resources which the user would like you to manage:
+
+<BEGIN DOCKER-RESOURCES>
+{input.containers}
+<END DOCKER-RESOURCES>
+
+Respond to this message with a plan of what you will do, in the EXACT format below:
+
+<BEGIN FORMAT>
+## Introduction
+
+I will be assisting with deploying Docker containers for project: `{input.name}`.
+
+### Plan+Apply Loop
+
+I will run in a plan+apply loop when you request changes to the project. This is
+to ensure that you are aware of the changes I am about to make, and to give you
+the opportunity to ask questions or make tweaks.
+
+Instruct me to apply immediately (without confirming the plan with you) when you desire to do so.
+
+## Commands
+
+Instruct me with the following commands at any point:
+
+- `help`: print this list of commands
+- `apply`: apply a given plan
+- `down`: stop containers in the project
+- `ps`: list containers in the project
+- `quiet`: turn on quiet mode (default)
+- `verbose`: turn on verbose mode (I will explain a lot!)
+- `destroy`: produce a plan to destroy all resources in the project
+
+## Plan
+
+I plan to take the following actions:
+
+1. CREATE ...
+2. READ ...
+3. UPDATE ...
+4. DESTROY ...
+5. RECREATE ...
+...
+N. ...
+
+Respond `apply` to apply this plan. Otherwise, provide feedback and I will present you with an updated plan.
+<END FORMAT>
+
+Always apply a plan in dependency order. For example, if you are creating a container that depends on a
+database, create the database first, and abort the apply if dependency creation fails. Likewise, 
+destruction should occur in the reverse dependency order, and be aborted if destroying a particular resource fails.
+
+Plans should only create, update, or destroy resources in the project. Relatedly, "recreate" should
+be used to indicate a destroy followed by a create; always prefer udpating a resource when possible,
+only recreating it if required (e.g. for immutable resources like containers).
+
+If the project already exists (as indicated by the presence of resources above) and your plan would
+produce no changes, simply respond with "No changes to make; project is up-to-date." If the user requests
+changes that would render a resource obsolete (e.g. an unused volume), you should destroy the resource.
+
+If you produce a plan and the next user message is not `apply`, simply drop the plan and inform
+the user that they must explicitly include "apply" in the message. Only
+apply a plan if it is contained in your latest message, otherwise ask the user to provide
+their desires for the new plan.
+
+IMPORTANT: maintain brevvity throughout your responses, unless instructed to be verbose.
+
+The following are guidelines for you to follow when interacting with Docker Tools:
+
+- Always prefer `run_container` for starting a container, instead of `create_container`+`start_container`.
+- Always prefer `recreate_container` for updating a container, instead of `stop_container`+`remove_container`+`run_container`.
+""",
+                    ),
+                )
+            ]
+        )
+
+    raise ValueError(f"Unknown prompt name: {name}")
+
+
+@app.list_resources()
 async def list_resources() -> list[types.Resource]:
     resources = []
     for container in docker_client.containers.list():
@@ -56,7 +214,7 @@ async def list_resources() -> list[types.Resource]:
     return resources
 
 
-@server.read_resource()
+@app.read_resource()
 async def read_resource(uri: AnyUrl) -> str:
     if not str(uri).startswith("docker://containers/"):
         raise ValueError(f"Unknown resource URI: {uri}")
@@ -81,7 +239,7 @@ async def read_resource(uri: AnyUrl) -> str:
         raise ValueError(f"Unknown container resource type: {resource_type}")
 
 
-@server.list_tools()
+@app.list_tools()
 async def list_tools() -> list[types.Tool]:
     return [
         types.Tool(
@@ -98,6 +256,11 @@ async def list_tools() -> list[types.Tool]:
             name="run_container",
             description="Run an image in a new Docker container",
             inputSchema=CreateContainerInput.model_json_schema(),
+        ),
+        types.Tool(
+            name="recreate_container",
+            description="Stop and remove a container, then run a new container. Fails if the container does not exist.",
+            inputSchema=RecreateContainerInput.model_json_schema(),
         ),
         types.Tool(
             name="start_container",
@@ -177,7 +340,7 @@ async def list_tools() -> list[types.Tool]:
     ]
 
 
-@server.call_tool()
+@app.call_tool()
 async def call_tool(
     name: str, arguments: Any
 ) -> Sequence[types.TextContent | types.ImageContent | types.EmbeddedResource]:
@@ -189,7 +352,11 @@ async def call_tool(
     try:
         if name == "list_containers":
             args = ListContainersInput.model_validate(arguments)
-            containers = docker_client.containers.list(**args.model_dump())
+            filters = {}
+            if args.filter_labels is not None:
+                filters["label"] = args.filter_labels
+
+            containers = docker_client.containers.list(all=args.all, filters=filters)
             result = [
                 {
                     "id": c.id,
@@ -216,6 +383,25 @@ async def call_tool(
             container = docker_client.containers.run(
                 **args.model_dump(),
             )
+            result = {
+                "status": container.status,
+                "id": container.id,
+                "name": container.name,
+            }
+
+        elif name == "recreate_container":
+            args = RecreateContainerInput.model_validate(arguments)
+
+            try:
+                container = docker_client.containers.get(args.resolved_container_id)
+            except docker.errors.NotFound:
+                raise Exception(f"Container not found: {args.resolved_container_id}")
+
+            container.stop()
+            container.remove()
+
+            run_args = CreateContainerInput.model_validate(arguments)
+            container = docker_client.containers.run(**run_args.model_dump())
             result = {
                 "status": container.status,
                 "id": container.id,
@@ -288,8 +474,11 @@ async def call_tool(
             result = {"status": "removed", "image": args.image}
 
         elif name == "list_networks":
-            ListNetworksInput.model_validate(arguments)  # Validate empty input
-            networks = docker_client.networks.list()
+            args = ListNetworksInput.model_validate(arguments)
+            filters = {}
+            if args.filter_labels is not None:
+                filters["label"] = args.filter_labels
+            networks = docker_client.networks.list(filters=filters)
             result = [
                 {"id": net.id, "name": net.name, "driver": net.attrs["Driver"]}
                 for net in networks
@@ -298,7 +487,7 @@ async def call_tool(
         elif name == "create_network":
             args = CreateNetworkInput.model_validate(arguments)
             network = docker_client.networks.create(
-                name=args.name, driver=args.driver, internal=args.internal
+                **args.model_dump(),
             )
             result = {"id": network.id, "name": network.name}
 
@@ -332,7 +521,7 @@ async def call_tool(
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
 
     except ValidationError as e:
-        await server.request_context.session.send_log_message(
+        await app.request_context.session.send_log_message(
             "error", "Failed to validate input provided by LLM: " + str(e)
         )
         return [
@@ -348,6 +537,4 @@ async def main():
     from mcp.server.stdio import stdio_server
 
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream, write_stream, server.create_initialization_options()
-        )
+        await app.run(read_stream, write_stream, app.create_initialization_options())

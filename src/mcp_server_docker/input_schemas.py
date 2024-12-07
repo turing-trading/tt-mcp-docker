@@ -2,7 +2,14 @@ import json
 from datetime import datetime
 from typing import Any, Literal, get_args, get_origin
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import (
+    BaseModel,
+    Field,
+    ValidationInfo,
+    computed_field,
+    field_validator,
+    model_validator,
+)
 
 
 class JSONParsingModel(BaseModel):
@@ -60,6 +67,9 @@ class ListContainersInput(JSONParsingModel):
     all: bool = Field(
         False, description="Show all containers (default shows just running)"
     )
+    filter_labels: list[str] | None = Field(
+        None, description="Filter by label, either `key` or `key=value` format"
+    )
 
 
 class CreateContainerInput(JSONParsingModel):
@@ -83,15 +93,36 @@ class CreateContainerInput(JSONParsingModel):
         None, description="Environment variables dictionary"
     )
     ports: dict[str, int | list[int] | tuple[str, int] | None] | None = Field(
-        None, description="Port mappings"
+        None, description="Mapping of container_port to host_port"
     )
     volumes: dict[str, dict[str, str]] | list[str] | None = Field(
         None, description="Volume mappings"
     )
     labels: dict[str, str] | list[str] | None = Field(
-        None, description="Container labels"
+        None,
+        description="Container labels, either as a dictionary or a list of key=value strings",
     )
     auto_remove: bool = Field(False, description="Automatically remove the container")
+
+
+class RecreateContainerInput(CreateContainerInput):
+    container_id: str | None = Field(
+        None,
+        description="Container ID to recreate. The `name` parameter will be used if this is not provided",
+    )
+
+    @computed_field
+    @property
+    def resolved_container_id(self) -> str:
+        return self.container_id or self.name  # pyright: ignore
+
+    @model_validator(mode="after")
+    def validate_container_id(self):
+        if self.container_id is None and self.name is None:
+            raise ValueError(
+                "container_id or name is required for identifying the container to stop+remove"
+            )
+        return self
 
 
 class ContainerActionInput(JSONParsingModel):
@@ -131,13 +162,16 @@ class RemoveImageInput(JSONParsingModel):
 
 
 class ListNetworksInput(JSONParsingModel):
-    pass
+    filter_labels: list[str] | None = Field(
+        None, description="Filter by label, either `key` or `key=value` format"
+    )
 
 
 class CreateNetworkInput(JSONParsingModel):
     name: str = Field(..., description="Network name")
     driver: str | None = Field("bridge", description="Network driver")
     internal: bool = Field(False, description="Create an internal network")
+    labels: dict[str, str] | None = Field(None, description="Network labels")
 
 
 class RemoveNetworkInput(JSONParsingModel):
@@ -157,3 +191,8 @@ class CreateVolumeInput(JSONParsingModel):
 class RemoveVolumeInput(JSONParsingModel):
     volume_name: str = Field(..., description="Volume name")
     force: bool = Field(False, description="Force remove the volume")
+
+
+class DockerComposePromptInput(BaseModel):
+    name: str
+    containers: str
