@@ -71,7 +71,7 @@ async def read_resource(uri: AnyUrl) -> str:
 
     if resource_type == "logs":
         logs = container.logs(tail=100).decode("utf-8")
-        return logs
+        return json.dumps(logs.split("\n"))
 
     elif resource_type == "stats":
         stats = container.stats(stream=False)
@@ -244,7 +244,7 @@ async def call_tool(
             args = FetchContainerLogsInput.model_validate(arguments)
             container = docker_client.containers.get(args.container_id)
             logs = container.logs(tail=args.tail).decode("utf-8")
-            result = {"logs": logs}
+            result = {"logs": logs.split("\n")}
 
         elif name == "list_images":
             args = ListImagesInput.model_validate(arguments)
