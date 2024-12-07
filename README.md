@@ -15,10 +15,20 @@ The server implements a couple resources for every container:
 
 #### `docker_compose`
 
-Use natural language instead of YAML to compose containers.
+Use natural language to compose containers.
 
 Simply provide a project name and a description of the containers comprising the
 project, and the LLM will come up with a deployment plan.
+
+This prompt instructs the LLM to enter a `plan+apply` loop. Your interaction
+with the LLM will involve the following steps:
+
+1. You give the LLM instructions for which containers to bring up
+2. The LLM calculates a concise natural language plan and presents it to you
+3. You either:
+
+- Apply the plan
+- Provide the LLM feedback, and the LLM recalculates the plan
 
 ##### Examples
 
@@ -26,6 +36,14 @@ project, and the LLM will come up with a deployment plan.
   9000"
 - name: `wordpress`, containers: "deploy a WordPress container and a supporting
   MySQL container, exposing Wordpress on port 9000"
+
+##### Resuming a Project
+
+When starting a new chat with this prompt, the LLM will receive the status of
+any containers, volumes, and networks created with the given project `name`.
+
+This is mainly useful for cleaning up, in-case you lose a chat that was
+responsible for many containers.
 
 ### Tools
 
@@ -61,6 +79,19 @@ project, and the LLM will come up with a deployment plan.
 - `remove_volume`
 
 ## Disclaimers
+
+### Sensitive Data
+
+**DO NOT CONFIGURE CONTAINERS WITH SENSITIVE DATA.** This includes API keys,
+database passwords, etc.
+
+Any sensitive data exchanged with the LLM is inherently compromised, unless the
+LLM is running on your local machine.
+
+If you are interested in securely passing secrets to containers, file an issue
+on this repository with your use-case.
+
+### Reviewing Created Containers
 
 Be careful to review the containers that the LLM creates. Docker is not a secure
 sandbox, and therefore the MCP server can potentially impact the host machine
