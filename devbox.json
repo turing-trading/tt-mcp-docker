@@ -1,33 +1,19 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.13.6/.schema/devbox.schema.json",
-  "packages": [
-    "nodejs@latest",
-    "uv@latest",
-    "taplo@latest"
-  ],
+  "packages": ["nodejs@latest", "uv@latest", "taplo@latest"],
   "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
-    ],
+    "init_hook": ["echo 'Welcome to devbox!' > /dev/null"],
     "scripts": {
-      "prettier-format": [
-        "npx --yes prettier --write *.json *.md"
-      ],
-      "prettier-check": [
-        "npx --yes prettier --check *.json *.md"
-      ],
-      "mcp-run": [
-        "uv run mcp-server-docker"
-      ],
+      "prettier-format": ["npx --yes prettier --write *.json *.md"],
+      "prettier-check": ["npx --yes prettier --check *.json *.md"],
+      "mcp-run": ["uv run mcp-server-docker"],
       "mcp-inspector": [
         "npx --yes @modelcontextprotocol/inspector uv run mcp-server-docker"
       ],
       "pyproject-check": [
         "taplo check pyproject.toml --schema https://json.schemastore.org/pyproject.json"
       ],
-      "pyproject-format": [
-        "taplo format pyproject.toml"
-      ]
+      "pyproject-format": ["taplo format pyproject.toml"]
     }
   }
 }
