@@ -64,13 +64,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
   <summary>Development/Unpublished Servers Configuration</summary>
   ```
   "mcpServers": {
-    "mcp-docker-server": {
+    "mcp-server-docker": {
       "command": "uv",
       "args": [
         "--directory",
         "/path/to/repo",
         "run",
-        "mcp-docker-server"
+        "mcp-server-docker"
       ]
     }
   }
