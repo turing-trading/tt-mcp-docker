@@ -10,8 +10,6 @@ from docker.models.containers import Container
 from mcp.server import Server
 from pydantic import AnyUrl, ValidationError
 
-from mcp_server_docker.settings import ServerSettings
-
 from .input_schemas import (
     BuildImageInput,
     ContainerActionInput,
@@ -31,6 +29,7 @@ from .input_schemas import (
     RemoveNetworkInput,
     RemoveVolumeInput,
 )
+from .settings import ServerSettings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("docker-server")
