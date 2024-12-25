@@ -15,11 +15,9 @@ An MCP server for managing Docker with natural language!
 - Tinkerers: spin up containers locally, without running a single command
   yourself.
 
-## 🧱 Components
+## 📝 Prompts
 
-### 📝 Prompts
-
-#### 🎻 `docker_compose`
+### 🎻 `docker_compose`
 
 Use natural language to compose containers.
 
@@ -35,14 +33,14 @@ with the LLM will involve the following steps:
    - Apply the plan
    - Provide the LLM feedback, and the LLM recalculates the plan
 
-##### Examples
+#### Examples
 
 - name: `nginx`, containers: "deploy an nginx container exposing it on port
   9000"
 - name: `wordpress`, containers: "deploy a WordPress container and a supporting
   MySQL container, exposing Wordpress on port 9000"
 
-##### Resuming a Project
+#### Resuming a Project
 
 When starting a new chat with this prompt, the LLM will receive the status of
 any containers, volumes, and networks created with the given project `name`.
@@ -50,16 +48,16 @@ any containers, volumes, and networks created with the given project `name`.
 This is mainly useful for cleaning up, in-case you lose a chat that was
 responsible for many containers.
 
-### 📔 Resources
+## 📔 Resources
 
 The server implements a couple resources for every container:
 
 - Stats: CPU, memory, etc. for a container
 - Logs: tail some logs from a container
 
-### 🔨 Tools
+## 🔨 Tools
 
-#### Containers
+### Containers
 
 - `list_containers`
 - `create_container`
@@ -70,7 +68,7 @@ The server implements a couple resources for every container:
 - `stop_container`
 - `remove_container`
 
-#### Images
+### Images
 
 - `list_images`
 - `pull_image`
@@ -78,13 +76,13 @@ The server implements a couple resources for every container:
 - `build_image`
 - `remove_image`
 
-#### Networks
+### Networks
 
 - `list_networks`
 - `create_network`
 - `remove_network`
 
-#### Volumes
+### Volumes
 
 - `list_volumes`
 - `create_volume`
