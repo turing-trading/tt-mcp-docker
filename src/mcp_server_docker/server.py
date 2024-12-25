@@ -1,5 +1,4 @@
 import json
-import logging
 from collections.abc import Sequence
 from typing import Any
 
@@ -30,9 +29,6 @@ from .input_schemas import (
     RemoveVolumeInput,
 )
 from .settings import ServerSettings
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("docker-server")
 
 app = Server("docker-server")
 _docker: docker.DockerClient
