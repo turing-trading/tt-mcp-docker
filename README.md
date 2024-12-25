@@ -15,6 +15,35 @@ An MCP server for managing Docker with natural language!
 - Tinkerers: spin up containers locally, without running a single command
   yourself.
 
+## 🏎️ Quickstart
+
+### Install
+
+#### Claude Desktop
+
+On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+
+On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+
+<details>
+  <summary>Development/Unpublished Servers Configuration</summary>
+
+```
+"mcpServers": {
+  "mcp-server-docker": {
+    "command": "uv",
+    "args": [
+      "--directory",
+      "/path/to/repo",
+      "run",
+      "mcp-server-docker"
+    ]
+  }
+}
+```
+
+</details>
+
 ## 📝 Prompts
 
 ### 🎻 `docker_compose`
@@ -116,35 +145,6 @@ to you, file an issue on this repository with your use-case.
 This server uses the Python Docker SDK's `from_env` method. For configuration
 details, see
 [the documentation](https://docker-py.readthedocs.io/en/stable/client.html#docker.client.from_env).
-
-## 🏎️ Quickstart
-
-### Install
-
-#### Claude Desktop
-
-On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
-
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-<details>
-  <summary>Development/Unpublished Servers Configuration</summary>
-
-```
-"mcpServers": {
-  "mcp-server-docker": {
-    "command": "uv",
-    "args": [
-      "--directory",
-      "/path/to/repo",
-      "run",
-      "mcp-server-docker"
-    ]
-  }
-}
-```
-
-</details>
 
 ## 💻 Development
 
