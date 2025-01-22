@@ -1,14 +1,9 @@
-import json
 from typing import Any
 
 from docker.models.containers import Container
 from docker.models.images import Image
 from docker.models.networks import Network
 from docker.models.volumes import Volume
-
-
-def docker_to_json(obj: Image | Container | Volume | Network) -> str:
-    return json.dumps(docker_to_dict(obj))
 
 
 def docker_to_dict(

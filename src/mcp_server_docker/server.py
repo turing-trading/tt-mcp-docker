@@ -391,8 +391,7 @@ async def call_tool(
             args = RemoveContainerInput.model_validate(arguments)
             container = _docker.containers.get(args.container_id)
             container.remove(force=args.force)
-            result = docker_to_dict(container)
-            result["status"] = "removed"
+            result = docker_to_dict(container, {"status": "removed"})
 
         elif name == "fetch_container_logs":
             args = FetchContainerLogsInput.model_validate(arguments)
