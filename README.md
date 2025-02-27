@@ -17,13 +17,6 @@ An MCP server for managing Docker with natural language!
 
 ## 🏎️ Quickstart
 
-### Prerequisites
-
-- Ensure you have `uv` installed (see
-  [the docs](https://docs.astral.sh/uv/getting-started/installation/) for
-  details)
-- Clone this repository
-
 ### Install
 
 #### Claude Desktop
