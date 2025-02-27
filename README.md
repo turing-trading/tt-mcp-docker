@@ -33,7 +33,7 @@ On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
-  <summary>Development/Unpublished Servers Configuration</summary>
+  <summary>Install with `uv`</summary>
 
 ```
 "mcpServers": {
@@ -44,6 +44,35 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
       "/path/to/repo",
       "run",
       "mcp-server-docker"
+    ]
+  }
+}
+```
+
+</details>
+
+<details>
+  <summary>Install with Docker</summary>
+
+After cloning this repository, build the Docker image:
+
+```bash
+docker build -t mcp-server-docker .
+```
+
+And then add the following to your MCP servers file:
+
+```
+"mcpServers": {
+  "mcp-server-docker": {
+    "command": "docker",
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "-v",
+      "/var/run/docker.sock:/var/run/docker.sock",
+      "mcp-server-docker:latest"
     ]
   }
 }
