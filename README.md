@@ -28,6 +28,14 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 <details>
   <summary>Install with `uv`</summary>
 
+To install the MCP server using `uv`, run the following command:
+
+```bash
+uv pip install git+https://github.com/ckreiling/mcp-server-docker
+```
+
+And then add the following to your MCP servers file:
+
 ```
 "mcpServers": {
   "mcp-server-docker": {
