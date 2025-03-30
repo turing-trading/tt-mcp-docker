@@ -362,11 +362,13 @@ async def call_tool(
 
         elif name == "create_container":
             args = CreateContainerInput.model_validate(arguments)
+            args.inject_secrets_to_environment(_server_settings.docker_secrets)
             container = _docker.containers.create(**args.model_dump())
             result = docker_to_dict(container)
 
         elif name == "run_container":
             args = CreateContainerInput.model_validate(arguments)
+            args.inject_secrets_to_environment(_server_settings.docker_secrets)
             container = _docker.containers.run(**args.model_dump())
             result = docker_to_dict(container)
 
@@ -378,6 +380,7 @@ async def call_tool(
             container.remove()
 
             run_args = CreateContainerInput.model_validate(arguments)
+            run_args.inject_secrets_to_environment(_server_settings.docker_secrets)
             container = _docker.containers.run(**run_args.model_dump())
             result = docker_to_dict(container)
 

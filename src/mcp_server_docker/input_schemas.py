@@ -5,6 +5,7 @@ from typing import Any, Literal, get_args, get_origin
 from pydantic import (
     BaseModel,
     Field,
+    SecretStr,
     ValidationInfo,
     computed_field,
     field_validator,
@@ -107,6 +108,24 @@ class CreateContainerInput(JSONParsingModel):
         description="Container labels, either as a dictionary or a list of key=value strings",
     )
     auto_remove: bool = Field(False, description="Automatically remove the container")
+    custom_secrets_env: dict[str, str] = Field(
+        {}, description="Custom secrets to mount as environment variables."
+    )
+
+    def inject_secrets_to_environment(self, secrets: dict[str, SecretStr]) -> None:
+        """Add secret values to environment variables."""
+        if not self.custom_secrets_env:
+            return
+
+        missing_secrets = set(self.custom_secrets_env) - set(secrets)
+        if missing_secrets:
+            raise ValueError(f"Custom secrets do not exist: {missing_secrets}")
+
+        if self.environment is None:
+            self.environment = {}
+
+        for secret_name, env_var_name in self.custom_secrets_env.items():
+            self.environment[env_var_name] = secrets[secret_name].get_secret_value()
 
 
 class RecreateContainerInput(CreateContainerInput):
