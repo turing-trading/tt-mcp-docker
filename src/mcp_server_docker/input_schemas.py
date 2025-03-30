@@ -205,6 +205,10 @@ class RemoveVolumeInput(JSONParsingModel):
     force: bool = Field(False, description="Force remove the volume")
 
 
+class ListCustomSecretsInput(JSONParsingModel):
+    pass
+
+
 class DockerComposePromptInput(BaseModel):
     name: str
     containers: str

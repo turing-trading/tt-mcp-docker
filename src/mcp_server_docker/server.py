@@ -18,6 +18,7 @@ from .input_schemas import (
     DockerComposePromptInput,
     FetchContainerLogsInput,
     ListContainersInput,
+    ListCustomSecretsInput,
     ListImagesInput,
     ListNetworksInput,
     ListVolumesInput,
@@ -336,6 +337,11 @@ async def list_tools() -> list[types.Tool]:
             description="Remove a Docker volume",
             inputSchema=RemoveVolumeInput.model_json_schema(),
         ),
+        types.Tool(
+            name="list_custom_secret_names",
+            description="List the names of custom secrets available to mount on containers",
+            inputSchema=ListCustomSecretsInput.model_json_schema(),
+        ),
     ]
 
 
@@ -464,6 +470,9 @@ async def call_tool(
             volume = _docker.volumes.get(args.volume_name)
             volume.remove(force=args.force)
             result = docker_to_dict(volume)
+
+        elif name == "list_custom_secret_names":
+            result = _server_settings.docker_secrets.keys()
 
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
