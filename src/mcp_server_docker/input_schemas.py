@@ -12,6 +12,8 @@ from pydantic import (
     model_validator,
 )
 
+from pydantic.json_schema import SkipJsonSchema
+
 
 class JSONParsingModel(BaseModel):
     """
@@ -108,24 +110,46 @@ class CreateContainerInput(JSONParsingModel):
         description="Container labels, either as a dictionary or a list of key=value strings",
     )
     auto_remove: bool = Field(False, description="Automatically remove the container")
-    custom_secrets_env: dict[str, str] = Field(
-        {}, description="Custom secrets to mount as environment variables."
+    custom_secrets_environment: dict[str, str] = Field(
+        {},
+        description="Map of env var name to secret name. The custom secret value associated to the given name will be mounted as the given env var.",
+        exclude=True,
     )
+    secrets: SkipJsonSchema[dict[str, SecretStr]] = Field(..., exclude=True)
 
-    def inject_secrets_to_environment(self, secrets: dict[str, SecretStr]) -> None:
+    @model_validator(mode="after")
+    def inject_secrets_to_environment(self):
         """Add secret values to environment variables."""
-        if not self.custom_secrets_env:
-            return
+        if not self.custom_secrets_environment:
+            return self
 
-        missing_secrets = set(self.custom_secrets_env) - set(secrets)
+        missing_secrets = set(self.custom_secrets_environment.values()) - set(
+            self.secrets
+        )
         if missing_secrets:
-            raise ValueError(f"Custom secrets do not exist: {missing_secrets}")
+            raise ValueError(f"Some custom secrets do not exist: {missing_secrets}")
 
         if self.environment is None:
             self.environment = {}
 
-        for secret_name, env_var_name in self.custom_secrets_env.items():
-            self.environment[env_var_name] = secrets[secret_name].get_secret_value()
+        for env_var_name, secret_name in self.custom_secrets_environment.items():
+            self.environment[env_var_name] = self.secrets[
+                secret_name
+            ].get_secret_value()
+
+        if self.labels is None:
+            self.labels = {}
+
+        custom_secrets_env_json = json.dumps(self.custom_secrets_environment)
+
+        if isinstance(self.labels, list):
+            self.labels.append(
+                f"mcp-server-docker.custom-secrets='{custom_secrets_env_json}'"
+            )
+        elif isinstance(self.labels, dict):
+            self.labels["mcp-server-docker.custom-secrets"] = custom_secrets_env_json
+
+        return self
 
 
 class RecreateContainerInput(CreateContainerInput):
