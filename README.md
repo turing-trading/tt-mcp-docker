@@ -154,18 +154,13 @@ The server implements a couple resources for every container:
 - `create_volume`
 - `remove_volume`
 
+### Custom Secrets
+
+For details, see the Custom Secrets section below.
+
+- `list_custom_secret_names`
+
 ## 🚧 Disclaimers
-
-### Sensitive Data
-
-**DO NOT CONFIGURE CONTAINERS WITH SENSITIVE DATA.** This includes API keys,
-database passwords, etc.
-
-Any sensitive data exchanged with the LLM is inherently compromised, unless the
-LLM is running on your local machine.
-
-If you are interested in securely passing secrets to containers, file an issue
-on this repository with your use-case.
 
 ### Reviewing Created Containers
 
@@ -182,6 +177,37 @@ to you, file an issue on this repository with your use-case.
 This server uses the Python Docker SDK's `from_env` method. For configuration
 details, see
 [the documentation](https://docker-py.readthedocs.io/en/stable/client.html#docker.client.from_env).
+
+### 🔑 Custom Secrets
+
+This MCP server provides a secure way to by keep sensitive configuration data
+hidden from the LLM while making it accessible to containers created by the LLM.
+
+Example configuration:
+
+```
+"mcpServers": {
+  "mcp-server-docker": {
+    "command": "docker",
+    "args": [
+      "run",
+      "-i",
+      "--rm",
+      "-v",
+      "/var/run/docker.sock:/var/run/docker.sock",
+      "mcp-server-docker:latest",
+      "--docker_secrets",
+      "openai_api_key=oai-1234567890"
+    ]
+  }
+}
+```
+
+The LLM uses the `list_custom_secret_names` to discover available secrets. It
+then maps environment variable names to secret names for container access. When
+the LLM requests container information, such as through the `list_containers`
+tool, the server only reveals the environment variable names, not their values,
+ensuring sensitive data remains protected.
 
 ## 💻 Development
 
