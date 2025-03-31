@@ -7,6 +7,7 @@ An MCP server for managing Docker with natural language!
 - 🚀 Compose containers with natural language
 - 🔍 Introspect & debug running containers
 - 📀 Manage persistent data with Docker volumes
+- 🔑 Securely configure containers with sensitive data
 
 ## ❓ Who is this for?
 
