@@ -184,7 +184,7 @@ details, see
 This MCP server provides a secure way to by keep sensitive configuration data
 hidden from the LLM while making it accessible to containers created by the LLM.
 
-Example configuration:
+Example configuration running in Docker:
 
 ```
 "mcpServers": {
@@ -195,16 +195,19 @@ Example configuration:
       "-i",
       "--rm",
       "-v",
+      "/home/myuser/mcp-secrets.env:/var/secrets/.env:ro",
+      "-v",
       "/var/run/docker.sock:/var/run/docker.sock",
       "mcp-server-docker:latest",
-      "--docker_secrets",
-      "openai_api_key=oai-1234567890"
+      "--docker_secrets_env_files",
+      "/var/secrets/.env"
     ]
   }
 }
 ```
 
-The LLM uses the `list_custom_secret_names` to discover available secrets. It
+Secrets are configured as key-value pairs in dotenv files, which the server
+reads at runtime. The LLM uses the `list_custom_secret_names` to discover available secrets. It
 then maps environment variable names to secret names for container access. When
 the LLM requests container information, such as through the `list_containers`
 tool, the server only reveals the environment variable names, not their values,
