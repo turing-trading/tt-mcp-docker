@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Any, Literal, get_args, get_origin
+from typing import Any, Literal, assert_never, get_args, get_origin
 
 from pydantic import (
     BaseModel,
@@ -142,12 +142,17 @@ class CreateContainerInput(JSONParsingModel):
 
         custom_secrets_env_json = json.dumps(self.custom_secrets_environment)
 
-        if isinstance(self.labels, list):
-            self.labels.append(
-                f"mcp-server-docker.custom-secrets='{custom_secrets_env_json}'"
-            )
-        elif isinstance(self.labels, dict):
-            self.labels["mcp-server-docker.custom-secrets"] = custom_secrets_env_json
+        match self.labels:
+            case list():
+                self.labels.append(
+                    f"mcp-server-docker.custom-secrets='{custom_secrets_env_json}'"
+                )
+            case dict():
+                self.labels["mcp-server-docker.custom-secrets"] = (
+                    custom_secrets_env_json
+                )
+            case _:
+                assert_never(self.labels)
 
         return self
 
