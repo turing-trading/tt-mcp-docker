@@ -61,6 +61,8 @@ And then add the following to your MCP servers file:
 <details>
   <summary>Install with Docker</summary>
 
+Purely for convenience, the server can run in a Docker container.
+
 After cloning this repository, build the Docker image:
 
 ```bash
@@ -84,6 +86,9 @@ And then add the following to your MCP servers file:
   }
 }
 ```
+
+Note that we mount the Docker socket as a volume; this ensures the MCP
+server can connect to and control the local Docker daemon.
 
 </details>
 
