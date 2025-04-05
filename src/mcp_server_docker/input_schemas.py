@@ -97,7 +97,8 @@ class CreateContainerInput(JSONParsingModel):
         None, description="Environment variables dictionary"
     )
     ports: dict[str, int | list[int] | tuple[str, int] | None] | None = Field(
-        None, description="Mapping of container_port to host_port"
+        None,
+        description="A map whose keys are the container port, and the values are the host port(s) to bind to.",
     )
     volumes: dict[str, dict[str, str]] | list[str] | None = Field(
         None, description="Volume mappings"

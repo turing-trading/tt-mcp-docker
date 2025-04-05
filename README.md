@@ -12,8 +12,15 @@ An MCP server for managing Docker with natural language!
 
 - Server administrators: connect to remote Docker engines for e.g. managing a
   public-facing website.
-- Tinkerers: spin up containers locally, without running a single command
-  yourself.
+- Tinkerers: run containers locally and experiment with open-source apps
+  supporting Docker.
+- AI enthusiasts: push the limits of that an LLM is capable of!
+
+## Demo
+
+A quick demo showing a WordPress deployment using natural language:
+
+https://github.com/user-attachments/assets/65e35e67-bce0-4449-af7e-9f4dd773b4b3
 
 ## 🏎️ Quickstart
 
@@ -26,24 +33,19 @@ On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
-  <summary>Install with `uv`</summary>
+  <summary>Install from PyPi with uv</summary>
 
-To install the MCP server using `uv`, run the following command:
+If you don't have `uv` installed, follow the installation instructions for your
+system:
+[link](https://docs.astral.sh/uv/getting-started/installation/#installation-methods)
 
-```bash
-uv pip install git+https://github.com/ckreiling/mcp-server-docker
-```
-
-And then add the following to your MCP servers file:
+Then add the following to your MCP servers file:
 
 ```
 "mcpServers": {
   "mcp-server-docker": {
-    "command": "uv",
+    "command": "uvx",
     "args": [
-      "--directory",
-      "/path/to/repo",
-      "run",
       "mcp-server-docker"
     ]
   }
@@ -54,6 +56,8 @@ And then add the following to your MCP servers file:
 
 <details>
   <summary>Install with Docker</summary>
+
+Purely for convenience, the server can run in a Docker container.
 
 After cloning this repository, build the Docker image:
 
@@ -79,13 +83,16 @@ And then add the following to your MCP servers file:
 }
 ```
 
+Note that we mount the Docker socket as a volume; this ensures the MCP server
+can connect to and control the local Docker daemon.
+
 </details>
 
 ## 📝 Prompts
 
 ### 🎻 `docker_compose`
 
-Use natural language to compose containers.
+Use natural language to compose containers. [See above](#demo) for a demo.
 
 Provide a Project Name, and a description of desired containers, and let the LLM
 do the rest.
@@ -188,3 +195,17 @@ details, see
 Prefer using Devbox to configure your development environment.
 
 See the `devbox.json` for helpful development commands.
+
+After setting up devbox you can configure your Claude MCP config to use it:
+
+```
+  "docker": {
+    "command": "/path/to/repo/.devbox/nix/profile/default/bin/uv",
+    "args": [
+      "--directory",
+      "/path/to/repo/",
+      "run",
+      "mcp-server-docker"
+    ]
+  },
+```

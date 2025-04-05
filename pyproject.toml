@@ -4,11 +4,20 @@ version = "0.1.0"
 description = "A Docker MCP Server"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "docker>=7.1.0",
-    "mcp>=1.1.0",
-    "pydantic-settings>=2.6.1",
+dependencies = ["docker>=7.1.0", "mcp>=1.1.0", "pydantic-settings>=2.6.1"]
+license = { file = "LICENSE" }
+keywords = ["docker", "mcp", "server"]
+
+requires-python = ">=3.12"
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.12"
 ]
+
+[project.urls]
+Repository = "https://github.com/ckreiling/mcp-server-docker"
+Issues = "https://github.com/ckreiling/mcp-server-docker/issues"
 
 [[project.authors]]
 name = "Christian Kreiling"
