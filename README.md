@@ -35,22 +35,13 @@ On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 <details>
   <summary>Install with `uv`</summary>
 
-To install the MCP server using `uv`, run the following command:
-
-```bash
-uv pip install git+https://github.com/ckreiling/mcp-server-docker
-```
-
-And then add the following to your MCP servers file:
+Add the following to your MCP servers file:
 
 ```
 "mcpServers": {
   "mcp-server-docker": {
-    "command": "uv",
+    "command": "uvx",
     "args": [
-      "--directory",
-      "/path/to/repo",
-      "run",
       "mcp-server-docker"
     ]
   }
@@ -200,3 +191,17 @@ details, see
 Prefer using Devbox to configure your development environment.
 
 See the `devbox.json` for helpful development commands.
+
+After setting up devbox you can configure your Claude MCP config to use it:
+
+```
+  "docker": {
+    "command": "/path/to/repo/.devbox/nix/profile/default/bin/uv",
+    "args": [
+      "--directory",
+      "/path/to/repo/",
+      "run",
+      "mcp-server-docker"
+    ]
+  },
+```
