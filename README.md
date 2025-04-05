@@ -33,9 +33,13 @@ On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
 On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
 
 <details>
-  <summary>Install with `uv`</summary>
+  <summary>Install from PyPi with uv</summary>
 
-Add the following to your MCP servers file:
+If you don't have `uv` installed, follow the installation instructions for your
+system:
+[link](https://docs.astral.sh/uv/getting-started/installation/#installation-methods)
+
+Then add the following to your MCP servers file:
 
 ```
 "mcpServers": {
