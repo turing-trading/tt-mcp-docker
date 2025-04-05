@@ -480,7 +480,7 @@ async def call_tool(
             result = docker_to_dict(volume)
 
         elif name == "list_custom_secret_names":
-            result = _server_settings.docker_secrets.keys()
+            result = list(_server_settings.docker_secrets.keys())
 
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
