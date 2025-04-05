@@ -12,7 +12,8 @@ An MCP server for managing Docker with natural language!
 
 - Server administrators: connect to remote Docker engines for e.g. managing a
   public-facing website.
-- Tinkerers: run containers locally and experiment with open-source apps supporting Docker.
+- Tinkerers: run containers locally and experiment with open-source apps
+  supporting Docker.
 - AI enthusiasts: push the limits of that an LLM is capable of!
 
 ## Demo
@@ -87,8 +88,8 @@ And then add the following to your MCP servers file:
 }
 ```
 
-Note that we mount the Docker socket as a volume; this ensures the MCP
-server can connect to and control the local Docker daemon.
+Note that we mount the Docker socket as a volume; this ensures the MCP server
+can connect to and control the local Docker daemon.
 
 </details>
 
@@ -96,7 +97,7 @@ server can connect to and control the local Docker daemon.
 
 ### 🎻 `docker_compose`
 
-Use natural language to compose containers.
+Use natural language to compose containers. [See above](#demo) for a demo.
 
 Provide a Project Name, and a description of desired containers, and let the LLM
 do the rest.
