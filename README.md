@@ -15,6 +15,10 @@ An MCP server for managing Docker with natural language!
 - Tinkerers: spin up containers locally, without running a single command
   yourself.
 
+## Demo
+
+https://github.com/user-attachments/assets/65e35e67-bce0-4449-af7e-9f4dd773b4b3
+
 ## 🏎️ Quickstart
 
 ### Install
