@@ -12,10 +12,12 @@ An MCP server for managing Docker with natural language!
 
 - Server administrators: connect to remote Docker engines for e.g. managing a
   public-facing website.
-- Tinkerers: spin up containers locally, without running a single command
-  yourself.
+- Tinkerers: run containers locally and experiment with open-source apps supporting Docker.
+- AI enthusiasts: push the limits of that an LLM is capable of!
 
 ## Demo
+
+A quick demo showing a WordPress deployment using natural language:
 
 https://github.com/user-attachments/assets/65e35e67-bce0-4449-af7e-9f4dd773b4b3
 
