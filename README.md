@@ -190,6 +190,26 @@ This server uses the Python Docker SDK's `from_env` method. For configuration
 details, see
 [the documentation](https://docker-py.readthedocs.io/en/stable/client.html#docker.client.from_env).
 
+### Connect to Docker over SSH
+
+This MCP server can connect to a remote Docker daemon over SSH.
+
+Simply set a `ssh://` host URL in the MCP server definition:
+
+```
+"mcpServers": {
+  "mcp-server-docker": {
+    "command": "uvx",
+    "args": [
+      "mcp-server-docker"
+    ],
+    "env": {
+      "DOCKER_HOST": "ssh://myusername@myhost.example.com"
+    }
+  }
+}
+```
+
 ## 💻 Development
 
 Prefer using Devbox to configure your development environment.
