@@ -1,9 +1,9 @@
 import json
 from collections.abc import Sequence
 from typing import Any
+import traceback
 
 import docker
-import docker.errors
 import mcp.types as types
 from docker.models.containers import Container
 from mcp.server import Server
@@ -477,6 +477,12 @@ async def call_tool(
                 type="text", text=f"ERROR: You provided invalid Tool inputs: {e}"
             )
         ]
+
+    except Exception as e:
+        await app.request_context.session.send_log_message(
+            "error", traceback.format_exc()
+        )
+        raise e
 
     return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
