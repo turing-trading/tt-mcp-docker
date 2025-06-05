@@ -12,11 +12,13 @@ def docker_to_dict(
     result = None
 
     if isinstance(obj, Image):
+        img_config: dict[str, Any] = obj.attrs.get("Config") or {}
+
         result = {
             "id": obj.id,
             "tags": obj.tags,
             "short_id": obj.short_id,
-            "labels": obj.labels,
+            "labels": img_config.get("Labels", {}),
             "repo_tags": obj.attrs.get("RepoTags"),
             "repo_digests": obj.attrs.get("RepoDigests"),
             "created": obj.attrs.get("Created"),
@@ -24,15 +26,15 @@ def docker_to_dict(
         }
 
     if isinstance(obj, Container):
-        config: dict[str, Any] = obj.attrs.get("Config", {})
+        config: dict[str, Any] = obj.attrs.get("Config") or {}
 
         result = {
             "id": obj.id,
             "name": obj.name,
             "short_id": obj.short_id,
-            "image": docker_to_dict(obj.image) if obj.image is not None else None,
+            "image": docker_to_dict(obj.image) if obj.image else None,
             "status": obj.status,
-            "labels": obj.labels,
+            "labels": config.get("Labels", {}),
             "ports": obj.ports,
             "created": obj.attrs.get("Created"),
             "state": obj.attrs.get("State"),
